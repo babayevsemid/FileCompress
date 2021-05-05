@@ -1,0 +1,3 @@
+include ':filecompress'
+include ':app'
+rootProject.name = "FileCompressing"

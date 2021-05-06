@@ -17,7 +17,7 @@ class FileCompress(private val context: Context) {
     private var fileSize = 0L
     private var maxSize = 0
 
-    suspend fun compress(file: File, maxSize: Int): File {
+    fun compress(file: File, maxSize: Int): File {
         this.fileSize = file.length() / 1024
         this.maxSize = maxSize
 

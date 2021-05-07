@@ -21,6 +21,8 @@ class FileCompress(private val context: Context) {
         this.fileSize = file.length() / 1024
         this.maxSize = maxSize
 
+        Log.e("fileSize", (fileSize).toString());
+
         val bitmap = getBitmap(file.path)
 
         return save(bitmap)
@@ -39,6 +41,7 @@ class FileCompress(private val context: Context) {
         } catch (e: Exception) {
         }
 
+        Log.e("newFile", (newFile.length() / 1024).toString());
         return newFile
     }
 
@@ -51,14 +54,15 @@ class FileCompress(private val context: Context) {
         if (((maxSize * 230) / fileSize) > 100)
             quality = ((maxSize * 150) / fileSize).toInt()
 
-        if (maxSize < 1000)
-            quality = ((maxSize * 230) / fileSize).toInt()
-
         if (maxSize >= 1000)
             quality = (maxSize * 204 / fileSize).toInt()
 
+        if (maxSize < 1000 && fileSize > 2000)
+            quality = ((maxSize * 230) / fileSize).toInt()
+
         if (quality > 100)
             quality = 100
+
 
         return quality
     }

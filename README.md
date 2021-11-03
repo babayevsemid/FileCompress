@@ -17,11 +17,9 @@ dependencies {
 ```
 ### Use
 
-```
-val compress = FileCompress(applicationContext)
-
+```  
 val file=....
-val newFile = compress.compress(file, 500) //500 KB
+val newFile = FileCompress.instance.compress(file, 500) // 480..500 KB
 
 ``` 
  
@@ -31,7 +29,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        FileCompress.deleteCompressedFiles(this)
+        FileCompress.init(this.applicationContext)
+        FileCompress.instance.deleteCompressedFiles()
     }
 }
 ``` 

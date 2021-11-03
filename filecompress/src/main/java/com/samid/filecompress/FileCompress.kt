@@ -1,5 +1,6 @@
 package com.samid.filecompress
 
+import android.R.attr
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -11,60 +12,52 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.max
+import android.os.Build
+
+import android.annotation.TargetApi
+import java.io.ByteArrayOutputStream
+import android.R.attr.bitmap
 
 
 class FileCompress(private val context: Context) {
-    private var fileSize = 0L
+    private var fileSize = 0f
     private var maxSize = 0
 
     fun compress(file: File, maxSize: Int): File {
-        this.fileSize = file.length() / 1024
-        this.maxSize = maxSize
-
-        Log.e("fileSize", (fileSize).toString());
-
         val bitmap = getBitmap(file.path)
+
+        this.maxSize = maxSize
+        this.fileSize = sizeOf(bitmap)
+
+        Log.d("FileCompress-FileSize", fileSize.toString());
 
         return save(bitmap)
     }
+
+    private fun sizeOf(data: Bitmap) = data.byteCount / 10000f
 
     private fun save(bitmap: Bitmap): File {
         val folder = createHolder()
 
         val newFile = File(folder, "${System.currentTimeMillis()}.jpg")
 
-        try {
-            val os = FileOutputStream(newFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, calculateQuality(), os)
-            os.flush()
-            os.close()
-        } catch (e: Exception) {
-        }
 
-        Log.e("newFile", (newFile.length() / 1024).toString());
+        var currSize: Int
+        var currQuality = 100
+
+        do {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, currQuality, stream)
+            currSize = stream.toByteArray().size / 1024
+
+            currQuality -= 2
+
+            if (currSize < maxSize)
+                stream.writeTo(FileOutputStream(newFile))
+        } while (currSize >= maxSize)
+
+        Log.e("FileCompress-MewFile", (newFile.length() / 1024).toString());
         return newFile
-    }
-
-    private fun calculateQuality(): Int {
-        var quality = 100
-
-        if (fileSize < maxSize)
-            quality = 100
-
-        if (((maxSize * 230) / fileSize) > 100)
-            quality = ((maxSize * 150) / fileSize).toInt()
-
-        if (maxSize >= 1000)
-            quality = (maxSize * 204 / fileSize).toInt()
-
-        if (maxSize < 1000 && fileSize > 2000)
-            quality = ((maxSize * 230) / fileSize).toInt()
-
-        if (quality > 100)
-            quality = 100
-
-
-        return quality
     }
 
     private fun createHolder(): File {

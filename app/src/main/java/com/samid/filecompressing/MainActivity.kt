@@ -9,7 +9,9 @@ import com.bumptech.glide.Glide
 import com.samid.filecompress.FileCompress
 import com.semid.filechooser.FileChooserActivity
 import com.semid.filechooser.FileTypeEnum
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -27,12 +29,18 @@ class MainActivity : AppCompatActivity() {
 
         val fileChooser = FileChooserActivity(this)
         fileChooser.fileLiveData.observe(this) {
-            lifecycleScope.launch {
+            Glide.with(applicationContext)
+                .load(it.path)
+                .into(img)
+
+            lifecycleScope.launch(Dispatchers.IO) {
                 val file = compress.compress(File(it.path), 500)
 
-                Glide.with(applicationContext)
-                    .load(file)
-                    .into(img)
+                withContext(Dispatchers.Main) {
+                    Glide.with(applicationContext)
+                        .load(file)
+                        .into(img)
+                }
             }
         }
 

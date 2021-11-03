@@ -9,18 +9,20 @@ import android.media.ExifInterface
 import android.util.Log
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.math.max
-import android.os.Build
-
-import android.annotation.TargetApi
-import java.io.ByteArrayOutputStream
-import android.R.attr.bitmap
+import android.R.attr.x
+import android.R.attr.x
+import android.annotation.SuppressLint
 
 
 class FileCompress private constructor() {
     private lateinit var filesFolder: File
+    private lateinit var bitmap: Bitmap
+
+    private var qualityList = arrayListOf<Int>()
+    private var previousStream: ByteArrayOutputStream? = null
     private var fileSize = 0f
     private var maxSize = 0
 
@@ -30,39 +32,52 @@ class FileCompress private constructor() {
     }
 
     fun compress(file: File, maxSize: Int): File {
-        val bitmap = getBitmap(file.path)
+        bitmap = getBitmap(file.path)
 
         this.maxSize = maxSize
         this.fileSize = sizeOf(bitmap)
 
-        Log.d("FileCompress-FileSize", fileSize.toString());
+        Log.d("FileCompress-OldSize", fileSize.toString());
 
-        return save(bitmap)
+        return save()
     }
 
-    private fun sizeOf(data: Bitmap) = data.byteCount / 10000f
-
-    private fun save(bitmap: Bitmap): File {
+    private fun save(): File {
         val newFile = File(filesFolder, "${System.currentTimeMillis()}.jpg")
 
-        var currSize: Int
-        var currQuality = 100
+        val stream = binarySearchQuality(qualityList, 0, qualityList.size - 1)
+        stream?.writeTo(FileOutputStream(newFile))
 
-        do {
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, currQuality, stream)
-            currSize = stream.toByteArray().size / 1024
-
-            currQuality -= 2
-
-            if (currSize < maxSize)
-                stream.writeTo(FileOutputStream(newFile))
-        } while (currSize >= maxSize)
-
-        Log.e("FileCompress-MewFile", (newFile.length() / 1024).toString());
+        Log.d("FileCompress-NewSize", (newFile.length() / 1024).toString());
         return newFile
     }
 
+    private fun binarySearchQuality(
+        qualityList: List<Int>,
+        left: Int,
+        right: Int
+    ): ByteArrayOutputStream? {
+        val mid = left + (right - left) / 2
+
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, mid, stream)
+        val currSize = stream.toByteArray().size / 1024
+
+        if (currSize < maxSize)
+            previousStream = stream
+
+        if (currSize in maxSize - 20..maxSize)
+            return stream
+        else if (left == right)
+            return if (currSize <= maxSize) stream else previousStream
+
+        return if (currSize > maxSize)
+            binarySearchQuality(qualityList, left, mid - 1)
+        else
+            binarySearchQuality(qualityList, mid + 1, right)
+    }
+
+    private fun sizeOf(data: Bitmap) = data.byteCount / 10000f
 
     private fun getBitmap(picturePath: String): Bitmap {
         var myBitmap = BitmapFactory.decodeFile(picturePath)
@@ -104,6 +119,9 @@ class FileCompress private constructor() {
 
         fun init(context: Context) {
             instance.createFilesFolder(context)
+
+            for (i in 0..100)
+                instance.qualityList.add(i)
         }
     }
 }

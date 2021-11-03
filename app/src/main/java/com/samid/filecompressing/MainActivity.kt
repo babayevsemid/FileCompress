@@ -30,10 +30,6 @@ class MainActivity : AppCompatActivity() {
 
         val fileChooser = FileChooserActivity(this)
         fileChooser.fileLiveData.observe(this) {
-            Glide.with(applicationContext)
-                .load(it.path)
-                .into(img)
-
             lifecycleScope.launch(Dispatchers.IO) {
                 val file = compress.compress(File(it.path), 500)
 

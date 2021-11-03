@@ -23,9 +23,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val img = findViewById<ImageView>(R.id.img)
 
-        FileCompress.deleteCompressedFiles(applicationContext)
+        FileCompress.init(applicationContext)
+        FileCompress.instance.deleteCompressedFiles()
 
-        val compress = FileCompress(applicationContext)
+        val compress = FileCompress.instance
 
         val fileChooser = FileChooserActivity(this)
         fileChooser.fileLiveData.observe(this) {

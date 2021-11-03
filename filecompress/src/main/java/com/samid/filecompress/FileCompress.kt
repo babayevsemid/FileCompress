@@ -19,9 +19,15 @@ import java.io.ByteArrayOutputStream
 import android.R.attr.bitmap
 
 
-class FileCompress(private val context: Context) {
+class FileCompress private constructor() {
+    private lateinit var filesFolder: File
     private var fileSize = 0f
     private var maxSize = 0
+
+    private fun createFilesFolder(context: Context) {
+        filesFolder = File(context.externalCacheDir, ".FileCompress")
+        filesFolder.mkdirs()
+    }
 
     fun compress(file: File, maxSize: Int): File {
         val bitmap = getBitmap(file.path)
@@ -37,10 +43,7 @@ class FileCompress(private val context: Context) {
     private fun sizeOf(data: Bitmap) = data.byteCount / 10000f
 
     private fun save(bitmap: Bitmap): File {
-        val folder = createHolder()
-
-        val newFile = File(folder, "${System.currentTimeMillis()}.jpg")
-
+        val newFile = File(filesFolder, "${System.currentTimeMillis()}.jpg")
 
         var currSize: Int
         var currQuality = 100
@@ -60,12 +63,6 @@ class FileCompress(private val context: Context) {
         return newFile
     }
 
-    private fun createHolder(): File {
-        val folder = File(context.externalCacheDir, ".FileCompress")
-        folder.mkdirs()
-
-        return folder
-    }
 
     private fun getBitmap(picturePath: String): Bitmap {
         var myBitmap = BitmapFactory.decodeFile(picturePath)
@@ -90,16 +87,23 @@ class FileCompress(private val context: Context) {
         return myBitmap
     }
 
-    companion object {
-        fun deleteCompressedFiles(context: Context) {
-            GlobalScope.launch {
-                val folder = FileCompress(context)
-                    .createHolder()
-
-                folder.listFiles()?.forEach {
-                    it.delete()
-                }
+    fun deleteCompressedFiles() {
+        GlobalScope.launch {
+            filesFolder.listFiles()?.forEach {
+                it.delete()
             }
+        }
+    }
+
+    private object HOLDER {
+        val INSTANCE = FileCompress()
+    }
+
+    companion object {
+        val instance: FileCompress by lazy { HOLDER.INSTANCE }
+
+        fun init(context: Context) {
+            instance.createFilesFolder(context)
         }
     }
 }

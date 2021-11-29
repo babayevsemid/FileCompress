@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileCompress:1.1.0' 
+    implementation 'com.github.babayevsemid:FileCompress:1.1.1' 
 }
 ```
 ### Use
@@ -20,6 +20,7 @@ dependencies {
 ```  
 val file=....
 val newFile = FileCompress.instance.compress(file, 500) // 480..500 KB
+//.compress(file, 500,10 //maxSizeExtra optional ex. 504 kb 480..510 KB)
 
 ``` 
  

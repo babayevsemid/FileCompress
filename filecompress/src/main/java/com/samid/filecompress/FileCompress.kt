@@ -66,9 +66,9 @@ class FileCompress private constructor() {
         if (currSize < maxSize)
             previousStream = stream
 
-        if (currSize in maxSize - 20..maxSize)
+        if (currSize in maxSize - 20..maxSize + 10)
             return stream
-        else if (left == right)
+        else if (left == right || right - left == 1)
             return if (currSize <= maxSize) stream else previousStream
 
         return if (currSize > maxSize)

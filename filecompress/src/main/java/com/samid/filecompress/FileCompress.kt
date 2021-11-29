@@ -25,16 +25,18 @@ class FileCompress private constructor() {
     private var previousStream: ByteArrayOutputStream? = null
     private var fileSize = 0f
     private var maxSize = 0
+    private var maxSizeExtra = 0
 
     private fun createFilesFolder(context: Context) {
         filesFolder = File(context.externalCacheDir, ".FileCompress")
         filesFolder.mkdirs()
     }
 
-    fun compress(file: File, maxSize: Int): File {
+    fun compress(file: File, maxSize: Int, maxSizeExtra: Int = 0): File {
         bitmap = getBitmap(file.path)
 
         this.maxSize = maxSize
+        this.maxSizeExtra = maxSizeExtra
         this.fileSize = sizeOf(bitmap)
 
         Log.d("FileCompress-OldSize", fileSize.toString());
@@ -66,7 +68,7 @@ class FileCompress private constructor() {
         if (currSize < maxSize)
             previousStream = stream
 
-        if (currSize in maxSize - 20..maxSize + 10)
+        if (currSize in maxSize - 20..maxSize + maxSizeExtra)
             return stream
         else if (left == right || right - left == 1)
             return if (currSize <= maxSize) stream else previousStream

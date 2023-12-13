@@ -45,6 +45,9 @@ class FileCompress private constructor() {
     }
 
     private fun save(): File {
+        if(!filesFolder.exists())
+            filesFolder.mkdirs()
+
         val newFile = File(filesFolder, "${System.currentTimeMillis()}.jpg")
 
         val stream = binarySearchQuality(qualityList, 0, qualityList.size - 1)

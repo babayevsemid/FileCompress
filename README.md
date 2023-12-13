@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileCompress:1.1.1' 
+    implementation 'com.github.babayevsemid:FileCompress:1.1.2' 
 }
 ```
 ### Use
